@@ -1,0 +1,18 @@
+services:
+  intranet-db:
+    image: mariadb:latest
+    container_name: intranet-mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: B@rbuñ@les1742
+      MYSQL_DATABASE: intranet_db
+      MYSQL_USER: intranet_user
+      MYSQL_PASSWORD: B@rbuñ@les1821
+    ports:
+      - "3307:3306"
+    volumes:
+      - intranet_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+volumes:
+  intranet_data:

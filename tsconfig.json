@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {    
+    "module": "nodenext",
+    "moduleResolution": "NodeNext",
+    "target": "ESnext",
+    "types": ["node"],       
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,    
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,    
+    "strict": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist"
+  }
+}
