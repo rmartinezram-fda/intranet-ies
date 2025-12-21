@@ -4,9 +4,17 @@ import session from 'express-session';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { pool } from './database.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Configuración de EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 // Verificación de seguridad antes de arrancar
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
   console.error('❌ ERROR FATAL: Faltan las credenciales de Google en el archivo .env');
@@ -78,12 +86,9 @@ app.get('/auth/google/callback',
 
 app.get('/panel', (req, res) => {
   if (req.isAuthenticated()) {
-    const user = req.user as any;
-    res.send(`
-      <h1>Bienvenido al Panel</h1>
-      <p>Usuario: <strong>${user.nombre} ${user.apellidos}</strong></p>
-      <a href="/logout">Salir</a>
-    `);
+    // En lugar de enviar texto, renderizamos el archivo 'panel.ejs'
+    // y le pasamos los datos del usuario
+    res.render('panel', { user: req.user });
   } else {
     res.redirect('/');
   }

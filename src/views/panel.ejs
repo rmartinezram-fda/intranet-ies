@@ -1,0 +1,47 @@
+<%- include('partials/header') %>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-light">Panel de Control</h2>
+        <p class="lead text-muted">Selecciona una opción para comenzar.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm hover-effect">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-person-badge text-primary display-4 mb-3"></i>
+                <h5 class="card-title">Mi Perfil</h5>
+                <p class="card-text text-muted">Consulta tus datos personales y administrativos.</p>
+                <a href="#" class="btn btn-outline-primary stretched-link">Ver Perfil</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-calendar3 text-success display-4 mb-3"></i>
+                <h5 class="card-title">Horarios</h5>
+                <p class="card-text text-muted">Consulta tu horario lectivo y guardias.</p>
+                <a href="#" class="btn btn-outline-success stretched-link">Ver Horario</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm bg-light opacity-75">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-mortarboard text-secondary display-4 mb-3"></i>
+                <h5 class="card-title text-muted">Gestión Alumnos</h5>
+                <p class="card-text small text-muted">
+                    <i class="bi bi-lock-fill"></i> Módulo en desarrollo
+                </p>
+                <button class="btn btn-secondary btn-sm" disabled>No disponible</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
