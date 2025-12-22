@@ -6,6 +6,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { pool } from './database.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { prisma } from './db.js';
 
 const app = express();
 
@@ -99,6 +100,36 @@ app.get('/logout', (req, res, next) => {
     if (err) return next(err);
     res.redirect('/');
   });
+});
+
+// RUTA MI HORARIO
+app.get('/mi-horario', async (req, res) => {
+  // Verificamos si está logueado (ajusta según tu sistema de auth)
+  if (!req.isAuthenticated || !req.isAuthenticated()) {
+    return res.redirect('/');
+  }
+
+  const user = req.user as any; // El usuario logueado
+
+  try {
+    // Buscamos el horario usando Prisma
+    // "include" hace la magia de JOIN automáticamente para traer nombres de Aula y Grupo
+    const horario = await prisma.horario.findMany({
+      where: { 
+        profesorId: user.id,
+        cursoId: "2025-2026" // Asegúrate de que coincida con el que importaste
+      },
+      include: {
+        aula: true,
+        grupo: true
+      }
+    });
+
+    res.render('horario', { user, horario });
+  } catch (error) {
+    console.error(error);
+    res.send("Error al cargar el horario.");
+  }
 });
 
 const PORT = 3000;

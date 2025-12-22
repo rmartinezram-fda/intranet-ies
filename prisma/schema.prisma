@@ -1,0 +1,90 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelos basados en tu código de importación
+
+model CursoAcademico {
+  id       String    @id // Ej: "2025-2026"
+  actual   Boolean   @default(false)
+  horarios Horario[]
+}
+
+model Profesor {
+  id           Int       @id @default(autoincrement())
+  nombre       String    // Ej: "Juan"
+  apellidos    String    // Ej: "Pérez García"
+  email        String?   @unique
+  departamento String?
+  password     String    // Aquí guardaremos el hash encriptado
+  rol_id       Int       @default(2)
+  activo       Boolean   @default(true)
+  horarios     Horario[]
+  reservas  Reserva[]
+  
+  @@map("usuarios") 
+}
+
+
+model Aula {
+  id       Int       @id @default(autoincrement())
+  nombre   String    @unique
+  horarios Horario[]
+  reservas  Reserva[]
+}
+
+model Grupo {
+  id       Int       @id @default(autoincrement())
+  nombre   String    @unique
+  horarios Horario[]
+}
+
+model Horario {
+  id          Int            @id @default(autoincrement())
+  diaSemana   Int
+  horaClase   Int
+  asignatura  String
+  
+  // Relaciones
+  profesorId  Int
+  profesor    Profesor       @relation(fields: [profesorId], references: [id], onDelete: Cascade)
+  
+  aulaId      Int?
+  aula        Aula?          @relation(fields: [aulaId], references: [id])
+  
+  grupoId     Int?
+  grupo       Grupo?         @relation(fields: [grupoId], references: [id])
+  
+  cursoId     String
+  curso       CursoAcademico @relation(fields: [cursoId], references: [id])
+
+  @@index([profesorId])
+  @@index([diaSemana, horaClase])
+}
+
+// Añadir al final de prisma/schema.prisma
+
+model Reserva {
+  id          Int      @id @default(autoincrement())
+  fecha       DateTime // Día de la reserva
+  horaInicio  Int      // Ej: 3 (3ª hora)
+  horaFin     Int      // Ej: 4 (Hasta la 4ª hora)
+  motivo      String?  // Ej: "Examen de recuperación"
+  
+  // Quién reserva
+  profesorId  Int
+  profesor    Profesor @relation(fields: [profesorId], references: [id])
+
+  // Qué reserva (Si tienes tabla Aula o Recurso, úsala. Aquí asumo Aula)
+  aulaId      Int
+  aula        Aula     @relation(fields: [aulaId], references: [id])
+
+  createdAt   DateTime @default(now()) // Para saber cuándo hizo la reserva
+}

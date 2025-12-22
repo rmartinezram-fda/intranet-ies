@@ -1,0 +1,86 @@
+<%- include('partials/header') %>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-calendar-week"></i> Horario Lectivo</h2>
+        <a href="/panel" class="btn btn-outline-secondary">&larr; Volver</a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center m-0 align-middle">
+                    <thead class="table-dark text-white">
+                        <tr>
+                            <th style="width: 10%">Hora</th>
+                            <th style="width: 18%">Lunes</th>
+                            <th style="width: 18%">Martes</th>
+                            <th style="width: 18%">Miércoles</th>
+                            <th style="width: 18%">Jueves</th>
+                            <th style="width: 18%">Viernes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% 
+                        // Definimos las horas lectivas y sus etiquetas
+                        const horas = [
+                            { id: 1, texto: '1ª Hora' },
+                            { id: 2, texto: '2ª Hora' },
+                            { id: 3, texto: '3ª Hora' },
+                            { id: 'RECREO', texto: 'Recreo' }, // Hueco manual
+                            { id: 4, texto: '4ª Hora' },
+                            { id: 5, texto: '5ª Hora' },
+                            { id: 6, texto: '6ª Hora' },
+                            { id: 7, texto: '7ª Hora' }
+                        ];
+                        
+                        horas.forEach(tramo => { 
+                        %>
+                            <% if (tramo.id === 'RECREO') { %>
+                                <tr class="table-secondary fw-bold text-uppercase" style="border-top: 2px solid #999; border-bottom: 2px solid #999;">
+                                    <td class="text-muted small">10:55 - 11:25</td>
+                                    <td colspan="5" class="text-muted py-2" style="letter-spacing: 3px;">
+                                        D E S C A N S O
+                                    </td>
+                                </tr>
+                            <% } else { %>
+                                <tr>
+                                    <td class="bg-light fw-bold text-muted small text-nowrap">
+                                        <%= tramo.texto %>
+                                    </td>
+
+                                    <% for(let dia=1; dia<=5; dia++) { 
+                                        // Buscamos la clase exacta para este Día y Hora
+                                        const clase = horario.find(h => h.horaClase === tramo.id && h.diaSemana === dia);
+                                    %>
+                                        <td>
+                                            <% if (clase) { %>
+                                                <div class="fw-bold text-primary mb-1">
+                                                    <%= clase.asignatura %>
+                                                </div>
+                                                
+                                                <% if (clase.grupo) { %>
+                                                    <span class="badge bg-info text-dark rounded-pill mb-1">
+                                                        <%= clase.grupo.nombre %>
+                                                    </span>
+                                                <% } %>
+                                                
+                                                <% if (clase.aula) { %>
+                                                    <div class="small text-muted mt-1">
+                                                        <i class="bi bi-geo-alt-fill"></i> <%= clase.aula.nombre %>
+                                                    </div>
+                                                <% } %>
+                                            <% } %>
+                                        </td>
+                                    <% } %>
+                                </tr>
+                            <% } %>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

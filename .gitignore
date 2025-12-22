@@ -1,3 +1,7 @@
 node_modules
 .env
 dist
+/src/generated/prisma
+*.db
+*.db-journal
+.DS_Store
