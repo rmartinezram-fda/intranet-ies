@@ -2,117 +2,160 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Intranet IES Félix de Azara</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <style>
-        body { background: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .login-container { max-width: 400px; margin-top: 100px; }
-        .dashboard-container { display: none; margin-top: 30px; } /* Oculto al principio */
-        .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
+        
+        /* Estilos para las Cartulinas del Menú */
+        .card-menu {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            border-radius: 15px;
+        }
+        .card-menu:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .icon-box {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* Ocultar pantallas por defecto */
+        .pantalla { display: none; }
+        /* Mostrar login al principio si no hay CSS que diga lo contrario */
+        #pantallaLogin { display: flex; } 
+
+        .header-bg { background: linear-gradient(135deg, #0d6efd, #0a58ca); color: white; padding: 15px 20px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="container login-container" id="pantallaLogin">
-        <div class="card shadow-lg">
-            <div class="card-header header-bg text-center p-4">
-                <h3><i class="bi bi-mortarboard-fill"></i> Intranet IES</h3>
-                <p class="mb-0">Acceso Docente</p>
-            </div>
-            <div class="card-body p-4">
-                <form onsubmit="event.preventDefault(); login();">
-                    <div class="mb-3">
-                        <label class="form-label">Email Corporativo</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                            <input type="text" id="email" class="form-control" value="jamal.bahssain.ajbal@iesfelixdeazara.com">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Contraseña</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-key"></i></span>
-                            <input type="password" id="password" class="form-control" value="1234">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold">INICIAR SESIÓN</button>
-                </form>
-                <div id="loginError" class="alert alert-danger mt-3 d-none"></div>
+    <div id="pantallaLogin" class="pantalla container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+        <div class="card p-5 shadow text-center" style="width: 400px; border-radius: 20px;">
+            <img src="https://via.placeholder.com/100x100?text=IES" class="mx-auto d-block rounded-circle mb-3" alt="Logo">
+            <h3 class="mb-1 fw-bold">Intranet IES</h3>
+            <p class="text-muted mb-4">Acceso Docente</p>
+
+            <div class="d-flex justify-content-center">
+                <div id="g_id_onload"
+                     data-client_id="1034265686318-fpkn3ml2cm7bg59p7igt01jtbe1im8qc.apps.googleusercontent.com"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-callback="handleCredentialResponse"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="sign_in_with" data-size="large" data-logo_alignment="left"></div>
             </div>
         </div>
     </div>
 
-    <div class="container dashboard-container" id="pantallaDashboard">
+    <div id="pantallaMenu" class="pantalla container py-5">
         
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark rounded-3 mb-4 p-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#"><i class="bi bi-grid-3x3-gap"></i> Panel de Control</a>
-                <div class="d-flex align-items-center text-white">
-                    <span id="nombreUsuario" class="me-3 fw-bold">Usuario</span>
-                    <button onclick="logout()" class="btn btn-outline-light btn-sm">Cerrar Sesión <i class="bi bi-box-arrow-right"></i></button>
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="fw-bold text-dark">Hola, <span id="nombreUsuarioMenu" class="text-primary">Profesor</span></h2>
+                <p class="text-muted">¿Qué gestión quieres realizar hoy?</p>
+            </div>
+            <button onclick="cerrarSesion()" class="btn btn-outline-danger">
+                <i class="bi bi-box-arrow-right"></i> Salir
+            </button>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-menu p-4 text-center h-100" onclick="navegarA('reservas')">
+                    <div class="card-body">
+                        <div class="icon-box text-primary"><i class="bi bi-calendar-check-fill"></i></div>
+                        <h4 class="card-title">Reserva de Aulas</h4>
+                        <p class="card-text text-muted small">Carros de portátiles, aula de audiovisuales y laboratorios.</p>
+                    </div>
                 </div>
             </div>
-        </nav>
 
-        <div class="row">
-            <div class="col-md-4">
-                
-                <div class="card shadow-sm mb-4">
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-menu p-4 text-center h-100" onclick="alert('Módulo en construcción 🛠️')">
                     <div class="card-body">
-                        <h5 class="card-title text-primary">⚡ Acciones Rápidas</h5>
-                        <div class="d-grid gap-2 mt-3">
-                            <button onclick="verHorario()" class="btn btn-outline-primary text-start"><i class="bi bi-calendar-week"></i> Ver Mi Horario</button>
-                            <button onclick="verMisReservas()" class="btn btn-outline-info text-start"><i class="bi bi-list-check"></i> Ver Mis Reservas</button>
-                            
-                            <button id="btnDirector" onclick="entrarDirector()" class="btn btn-outline-danger text-start d-none"><i class="bi bi-shield-lock"></i> Zona Dirección</button>
-                        </div>
+                        <div class="icon-box text-danger"><i class="bi bi-tools"></i></div>
+                        <h4 class="card-title">Incidencias TIC</h4>
+                        <p class="card-text text-muted small">Reportar averías en proyectores, ordenadores o red.</p>
                     </div>
                 </div>
+            </div>
 
-                <div class="card shadow-sm border-warning">
-                    <div class="card-header bg-warning text-dark fw-bold">
-                        <i class="bi bi-plus-circle"></i> Nueva Reserva
-                    </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card card-menu p-4 text-center h-100" onclick="alert('Conectando con SIGAD... (Es broma)')">
                     <div class="card-body">
-                        <div class="mb-2">
-                            <label>Aula:</label>
-                            <select id="reservaAula" class="form-select">
-                                <option value="1">Aula 1 - Informática</option>
+                        <div class="icon-box text-success"><i class="bi bi-person-lines-fill"></i></div>
+                        <h4 class="card-title">Guardias</h4>
+                        <p class="card-text text-muted small">Consultar cuadrante de guardias y sustituciones.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="pantallaReservas" class="pantalla container py-4">
+        
+        <div class="header-bg d-flex justify-content-between align-items-center mb-4 shadow-sm">
+            <div class="d-flex align-items-center">
+                <button onclick="navegarA('menu')" class="btn btn-light btn-sm me-3 text-primary fw-bold">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </button>
+                <h3 class="mb-0">Gestión de Reservas</h3>
+            </div>
+            <div id="infoAdmin" class="d-none">
+                <span class="badge bg-warning text-dark"><i class="bi bi-shield"></i> MODO DIRECTOR</span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card p-3 shadow-sm border-0">
+                    <h5 class="text-primary mb-3">Nueva Reserva</h5>
+                    <form id="formReserva">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Recurso / Aula</label>
+                            <select class="form-select" id="selectAula">
+                                <option value="AULA_101">Aula 101 (Informática)</option>
+                                <option value="AULA_202">Aula 202 (Proyector)</option>
+                                <option value="CARRO_1">Carro Portátiles 1</option>
+                                <option value="GYM">Gimnasio</option>
                             </select>
-                        </div>
-                        <div class="mb-2">
-                            <label>Fecha:</label>
-                            <input type="date" id="reservaFecha" class="form-control">
                         </div>
                         <div class="mb-3">
-                            <label>Hora:</label>
-                            <select id="reservaHora" class="form-select">
-                                <option value="1">1ª Hora (08:30)</option>
-                                <option value="2">2ª Hora (09:25)</option>
-                                <option value="3">3ª Hora (10:20)</option>
-                            </select>
+                            <label class="form-label fw-bold small">Fecha y Hora</label>
+                            <input type="datetime-local" class="form-control" id="inputFecha">
                         </div>
-                        <button onclick="hacerReserva()" class="btn btn-warning w-100">Confirmar Reserva</button>
-                    </div>
+                        <button type="submit" class="btn btn-primary w-100 shadow-sm">Confirmar Reserva</button>
+                    </form>
                 </div>
             </div>
 
             <div class="col-md-8">
-                <div id="alertaGeneral" class="alert alert-info d-none"></div>
-                
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white fw-bold" id="tituloPanel">
-                        📢 Tablón de Información
+                <div class="card p-3 shadow-sm border-0 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-dark">Mis Reservas Activas</h5>
+                        <button onclick="cargarReservas()" class="btn btn-sm btn-outline-primary"><i class="bi bi-arrow-clockwise"></i></button>
                     </div>
-                    <div class="card-body" id="contenidoPanel">
-                        <div class="text-center text-muted py-5">
-                            <i class="bi bi-arrow-left-circle" style="font-size: 2rem;"></i>
-                            <p class="mt-2">Selecciona una opción del menú izquierdo.</p>
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr><th>Aula</th><th>Fecha</th><th>Estado</th></tr>
+                            </thead>
+                            <tbody id="tablaReservas"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -120,185 +163,138 @@
     </div>
 
     <script>
-        let tokenGlobal = '';
-
-        // --- 1. LOGIN ---
-        async function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('loginError');
-
-            try {
-                const res = await fetch('http://localhost:3000/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-
-                if (res.ok) {
-                    tokenGlobal = data.token;
-                    
-                    // Cambiar de pantalla
-                    document.getElementById('pantallaLogin').style.display = 'none';
-                    document.getElementById('pantallaDashboard').style.display = 'block';
-                    
-                    // Poner nombre usuario
-                    document.getElementById('nombreUsuario').innerHTML = `<i class="bi bi-person-circle"></i> ${data.user.nombre}`;
-
-                    // Si es director, mostrar botón rojo
-                    if (data.user.rol_id === 1) {
-                        document.getElementById('btnDirector').classList.remove('d-none');
-                    }
-
-                } else {
-                    errorDiv.innerText = "❌ " + data.error;
-                    errorDiv.classList.remove('d-none');
-                }
-            } catch (e) {
-                alert("Error de conexión con el servidor");
+        // --- GESTOR DE PANTALLAS ---
+        function mostrarPantalla(id) {
+            // Ocultar todas
+            document.querySelectorAll('.pantalla').forEach(p => {
+                p.style.display = 'none';
+                p.classList.remove('d-flex'); // Por si acaso era flex
+            });
+            
+            // Mostrar la elegida
+            const pantalla = document.getElementById(id);
+            if (id === 'pantallaLogin') {
+                pantalla.style.display = 'flex'; // El login necesita flex para centrar
+            } else {
+                pantalla.style.display = 'block';
             }
         }
 
-        function logout() {
-            location.reload(); // La forma más fácil de cerrar sesión es recargar
+        // --- NAVEGACIÓN ---
+        function navegarA(destino) {
+            if (destino === 'menu') {
+                mostrarPantalla('pantallaMenu');
+            } else if (destino === 'reservas') {
+                mostrarPantalla('pantallaReservas');
+                cargarReservas(); // Cargar datos al entrar
+            }
         }
 
-        // --- 2. VER HORARIO ---
-        async function verHorario() {
-            setLoading("Cargando horario...");
+        // --- 1. INICIALIZACIÓN ---
+        window.onload = function() {
+            const usuario = JSON.parse(localStorage.getItem('usuarioIntranet'));
+            const token = localStorage.getItem('tokenIntranet');
+
+            if (usuario && token) {
+                console.log("Sesión activa detectada");
+                configurarInterfaz(usuario);
+                mostrarPantalla('pantallaMenu');
+            } else {
+                mostrarPantalla('pantallaLogin');
+            }
+        };
+
+        // --- 2. LOGIN GOOGLE ---
+        async function handleCredentialResponse(response) {
             try {
-                const res = await fetch('http://localhost:3000/api/mi-horario', {
-                    headers: { 'Authorization': 'Bearer ' + tokenGlobal }
-                });
-                const clases = await res.json();
-
-                if (clases.length === 0) {
-                    pintarEnPanel("📅 Tu Horario", "<div class='alert alert-warning'>No tienes clases asignadas.</div>");
-                    return;
-                }
-
-                let html = `<table class="table table-striped table-hover">
-                    <thead class="table-dark"><tr><th>Día</th><th>Hora</th><th>Asignatura</th></tr></thead><tbody>`;
-                
-                const dias = ["D", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "S"];
-                clases.forEach(c => {
-                    html += `<tr><td>${dias[c.diaSemana]}</td><td>${c.horaClase}ª</td><td><strong>${c.asignatura}</strong></td></tr>`;
-                });
-                html += "</tbody></table>";
-                
-                pintarEnPanel("📅 Tu Horario Fijo", html);
-            } catch (e) { mostrarAlerta("Error al cargar horario", "danger"); }
-        }
-
-        // --- 3. RESERVAR ---
-        async function hacerReserva() {
-            const aula = document.getElementById('reservaAula').value;
-            const fecha = document.getElementById('reservaFecha').value;
-            const hora = document.getElementById('reservaHora').value;
-
-            if(!fecha) { mostrarAlerta("⚠️ Selecciona una fecha válida", "warning"); return; }
-
-            try {
-                const res = await fetch('http://localhost:3000/api/reservas', {
+                const res = await fetch('/api/auth/google', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tokenGlobal },
-                    body: JSON.stringify({ aulaId: aula, fecha: fecha, horaInicio: hora })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: response.credential })
                 });
-                const data = await res.json();
 
-                if(res.ok) {
-                    mostrarAlerta(`✅ ¡Reserva confirmada! (ID: ${data.reserva.id})`, "success");
-                    verMisReservas(); // Actualizamos la lista automáticamente
+                if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('tokenIntranet', data.token);
+                    localStorage.setItem('usuarioIntranet', JSON.stringify(data.user));
+                    
+                    configurarInterfaz(data.user);
+                    mostrarPantalla('pantallaMenu');
                 } else {
-                    mostrarAlerta(`❌ ${data.error}`, "danger");
+                    alert("Error de acceso");
                 }
-            } catch(e) { mostrarAlerta("Error al conectar", "danger"); }
+            } catch (e) {
+                alert("Error de conexión");
+            }
         }
 
-        // --- 4. VER RESERVAS Y BORRAR ---
-        async function verMisReservas() {
-            setLoading("Buscando reservas...");
+        // --- CONFIGURAR DATOS VISUALES ---
+        function configurarInterfaz(usuario) {
+            document.getElementById('nombreUsuarioMenu').innerText = usuario.nombre;
+            
+            if (usuario.rol_id === 1) { // Si es director
+                document.getElementById('infoAdmin').classList.remove('d-none');
+            }
+        }
+
+        // --- 3. LÓGICA DE RESERVAS ---
+        async function cargarReservas() {
+            const token = localStorage.getItem('tokenIntranet');
             try {
-                const res = await fetch('http://localhost:3000/api/mis-reservas', {
-                    headers: { 'Authorization': 'Bearer ' + tokenGlobal }
+                const res = await fetch('/api/reservas/mis-reservas', {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const reservas = await res.json();
-
-                if (reservas.length === 0) {
-                    pintarEnPanel("📋 Mis Reservas", "<p class='text-muted'>No tienes reservas activas.</p>");
-                    return;
-                }
-
-                let html = `<table class="table align-middle">
-                    <thead class="table-primary"><tr><th>Fecha</th><th>Hora</th><th>Aula</th><th>Acción</th></tr></thead><tbody>`;
                 
-                reservas.forEach(r => {
-                    const fecha = r.fecha.split('T')[0];
-                    html += `<tr>
-                        <td>${fecha}</td>
-                        <td>${r.horaInicio}ª Hora</td>
-                        <td>${r.aula ? r.aula.nombre : 'Aula '+r.aulaId}</td>
-                        <td><button onclick="borrarReserva(${r.id})" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Eliminar</button></td>
-                    </tr>`;
-                });
-                html += "</tbody></table>";
-                pintarEnPanel("📋 Gestión de Reservas", html);
+                const tbody = document.getElementById('tablaReservas');
+                tbody.innerHTML = '';
 
-            } catch (e) { mostrarAlerta("Error al ver reservas", "danger"); }
-        }
-
-        async function borrarReserva(id) {
-            if(!confirm("¿Liberar el aula?")) return;
-            try {
-                const res = await fetch(`http://localhost:3000/api/reservas/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + tokenGlobal }
-                });
-                if(res.ok) {
-                    mostrarAlerta("Reserva eliminada", "success");
-                    verMisReservas();
+                if (res.ok) {
+                    const reservas = await res.json();
+                    if (reservas.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Sin reservas</td></tr>';
+                        return;
+                    }
+                    reservas.forEach(r => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td><span class="badge bg-primary">${r.aula}</span></td>
+                                <td>${new Date(r.fecha_hora).toLocaleString()}</td>
+                                <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            </tr>`;
+                    });
                 }
-            } catch(e) { alert("Error"); }
+            } catch (e) { console.error(e); }
         }
 
-        // --- 5. ZONA DIRECTOR ---
-        async function entrarDirector() {
-            setLoading("Verificando credenciales de Director...");
-            try {
-                const res = await fetch('http://localhost:3000/api/admin/panel', {
-                    headers: { 'Authorization': 'Bearer ' + tokenGlobal }
-                });
-                const data = await res.json();
-                
-                if(res.ok) {
-                    pintarEnPanel("👔 Panel de Dirección", 
-                        `<div class="alert alert-success"><h4>${data.mensaje}</h4><p>${data.datos_sensibles}</p></div>`
-                    );
-                } else {
-                    mostrarAlerta(data.error, "danger");
-                }
-            } catch(e) { mostrarAlerta("Error de acceso", "danger"); }
-        }
+        document.getElementById('formReserva').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('tokenIntranet');
+            const aula = document.getElementById('selectAula').value;
+            const fecha = document.getElementById('inputFecha').value;
 
-        // --- UTILIDADES ---
-        function pintarEnPanel(titulo, contenido) {
-            document.getElementById('tituloPanel').innerText = titulo;
-            document.getElementById('contenidoPanel').innerHTML = contenido;
-            document.getElementById('alertaGeneral').classList.add('d-none'); // Ocultar alertas viejas
-        }
+            if (!fecha) return alert("Pon fecha");
 
-        function setLoading(msg) {
-            pintarEnPanel("Cargando...", `<div class="d-flex justify-content-center p-4">
-                <div class="spinner-border text-primary" role="status"></div>
-                <span class="ms-3 pt-1">${msg}</span></div>`);
-        }
+            const res = await fetch('/api/reservas', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ aula, fecha_hora: new Date(fecha).toISOString() })
+            });
 
-        function mostrarAlerta(msg, tipo) {
-            const alerta = document.getElementById('alertaGeneral');
-            alerta.className = `alert alert-${tipo}`;
-            alerta.innerText = msg;
-            alerta.classList.remove('d-none');
+            if (res.ok) {
+                alert("✅ Reserva OK");
+                cargarReservas();
+            } else {
+                alert("❌ Error al reservar");
+            }
+        });
+
+        // --- SALIR ---
+        function cerrarSesion() {
+            localStorage.clear();
+            location.reload();
         }
     </script>
 </body>

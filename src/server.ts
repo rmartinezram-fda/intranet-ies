@@ -3,11 +3,31 @@ import { PrismaClient } from '@prisma/client';
 import cors from 'cors'; // Para que el frontend pueda conectarse sin problemas
 import jwt from 'jsonwebtoken'; // <--- NUEVO
 import bcrypt from 'bcryptjs'; // <--- MOVIDO ARRIBA (Donde debe estar)
+import { OAuth2Client } from 'google-auth-library';
+import path from 'path';
+import dotenv from 'dotenv';
 
+dotenv.config();
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const prisma = new PrismaClient();
 const app = express();
 const PORT = 3000;
 const SECRET_KEY = "B@rbuñ@les1742B@rbuñ@les1821"; // Clave secreta para JWT
+
+// --- CONFIGURACIÓN CRITICA (ORDEN IMPORTANTE) ---
+
+// 1. Permitir conexiones desde cualquier lado (Arregla el error de red)
+app.use(cors()); 
+
+// 2. Permitir que el servidor entienda JSON (Vital para recibir el token)
+app.use(express.json());
+
+// 3. Log para ver si llegan peticiones (El chivato)
+app.use((req, res, next) => {
+    console.log(`📡 Recibida petición: ${req.method} ${req.url}`);
+    next();
+})
 
 // --- MIDDLEWARE DE AUTENTICACIÓN ---
 const autenticarToken = (req: any, res: any, next: any) => {
@@ -49,9 +69,10 @@ app.use(cors()); // Permite conexiones externas
 
 // --- RUTAS DE LA API ---
 
-// Ruta de bienvenida para comprobar que la API está viva
-app.get('/', (req, res) => {
-  res.send('¡Hola! La API del IES Félix de Azara está funcionando. Ve a /api/profesores para ver datos.');
+// ✅ PON ESTE NUEVO ✅
+app.get('/', (req: any, res: any) => {
+    // Sirve el archivo HTML cuando entras a localhost:3000
+    res.sendFile(path.join(process.cwd(), 'prueba_login.html'));
 });
 
 // 1. Obtener TODOS los profesores
@@ -332,6 +353,97 @@ app.get('/api/admin/panel', autenticarToken, soloDirectores, async (req: any, re
         mensaje: `Bienvenido Director. Hay ${totalUsuarios} profesores y ${totalReservas} reservas activas.`,
         datos_sensibles: "Aquí irían los botones para despedir gente o borrar usuarios..."
     });
+});
+
+
+// --- 10. LOGIN CON GOOGLE (CORREGIDO TYPESCRIPT) ---
+app.post('/api/auth/google', async (req: any, res: any) => {
+    console.log("🔍 1. Entrando en el login de Google...");
+    const { token } = req.body;
+
+    try {
+        if (!token) throw new Error("No ha llegado ningún token desde el frontend");
+        
+        // CORRECCIÓN AQUÍ: Aseguramos que el ID existe
+        const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+        if (!CLIENT_ID) {
+            throw new Error("Falta el GOOGLE_CLIENT_ID en el archivo .env");
+        }
+
+        console.log("🔍 2. Token recibido. Preguntando a Google...");
+
+        // 1. Verificar el token con Google
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: CLIENT_ID, // Ahora TypeScript sabe que esto es un string seguro
+        });
+        
+        const payload = ticket.getPayload();
+        
+        // TypeScript a veces devuelve undefined en payload, lo aseguramos:
+        if (!payload) throw new Error("Google no devolvió datos del usuario");
+
+        const emailGoogle = payload.email;
+        const nombreGoogle = payload.given_name; 
+        const apellidoGoogle = payload.family_name;
+
+        console.log(`🔍 3. Google dice que eres: ${emailGoogle}`);
+
+        if (!emailGoogle) {
+            return res.status(400).json({ error: 'Token inválido: Google no dio email' });
+        }
+
+        console.log("🔍 4. Conectando con Base de Datos...");
+
+        // 2. Buscar/Crear usuario
+        const usuario = await prisma.profesor.upsert({
+            where: { email: emailGoogle },
+            update: {}, 
+            create: {
+                email: emailGoogle,
+                password: await bcrypt.hash(Math.random().toString(), 10), 
+                nombre: nombreGoogle || "Usuario",
+                apellidos: apellidoGoogle || "Google",
+                departamento: "General",
+                activo: true,
+                rol_id: 2 
+            }
+        });
+
+        console.log("🔍 5. Usuario gestionado en BD. ID:", usuario.id);
+
+        if (!usuario.activo) {
+            return res.status(403).json({ error: '⛔ Tu usuario está desactivado.' });
+        }
+
+        // 3. Generar Token
+        const JWT_SECRET = process.env.JWT_SECRET;
+        if (!JWT_SECRET) throw new Error("Falta JWT_SECRET en el .env");
+
+        const tokenIntranet = jwt.sign(
+            { userId: usuario.id, email: usuario.email, rol_id: usuario.rol_id },
+            JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+
+        console.log("🔍 6. ¡ÉXITO! Enviando respuesta al frontend.");
+
+        res.json({ 
+            mensaje: `✅ Bienvenido ${usuario.nombre}`, 
+            token: tokenIntranet, 
+            user: usuario 
+        });
+
+    } catch (error: any) {
+        console.error("❌ ERROR FATAL EN EL SERVIDOR:", error);
+        res.status(500).json({ error: error.message || "Error desconocido en el servidor" });
+    }
+});
+
+// --- RUTA PARA SERVIR LA WEB (FRONTEND) ---
+app.get('/', (req, res) => {
+    // Esto busca el archivo "prueba_login.html" en la carpeta principal
+    res.sendFile(path.join(process.cwd(), 'prueba_login.html'));
 });
 
 // Iniciar servidor
